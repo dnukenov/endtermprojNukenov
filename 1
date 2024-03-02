@@ -1,0 +1,117 @@
+> Данияр Нукенов:
+import tkinter as tk
+from tkinter import ttk
+import random
+import pygame
+from tkinter import messagebox
+import sys
+import math
+
+class Game:
+    def init(self, master):
+        self.master = master
+        self.master.title('Game')
+        self.master.geometry('400x400')
+
+        self.correct_answers = 0
+        self.incorrect_answers = 0
+
+        self.words_easy = {
+            'hello': 'привет',
+            'world': 'мир',
+            'quit': 'выход',
+            'apple': 'яблоко',
+            'cat': 'кот',
+            'dog': 'собака',
+            'house': 'дом',
+            'book': 'книга',
+            'pen': 'ручка',
+            'tree': 'дерево'
+        }
+
+        self.words_medium = {
+            'banana': 'банан',
+            'table': 'стол',
+            'chair': 'стул',
+            'car': 'машина',
+            'ball': 'мяч',
+            'school': 'школа',
+            'mouse': 'мышь',
+            'phone': 'телефон',
+            'flower': 'цветок',
+            'sun': 'солнце'
+        }
+
+        self.words_hard = {
+            'computer': 'компьютер',
+            'train': 'поезд',
+            'window': 'окно',
+            'cup': 'чашка',
+            'bottle': 'бутылка',
+            'picture': 'картина',
+            'bag': 'сумка',
+            'watch': 'часы',
+            'door': 'дверь',
+            'key': 'ключ'
+        }
+
+        pygame.init()
+        pygame.mixer.init()
+        self.correct_sound = pygame.mixer.Sound("correct.mp3")
+        self.incorrect_sound = pygame.mixer.Sound("incorrect.mp3")
+
+        self.setup_widgets()
+        self.next_word()
+
+    def setup_widgets(self):
+        self.word_label = ttk.Label(self.master, text='', font=('calibri', 18))
+        self.word_label.pack(pady=20)
+
+        self.translation_entry = ttk.Entry(self.master, font=('calibri', 18))
+        self.translation_entry.pack()
+        self.translation_entry.bind('<Return>', self.check_translation)
+
+        self.check_button = ttk.Button(self.master, text='Try', command=self.check_translation)
+        self.check_button.pack(pady=20)
+
+        self.result_label = ttk.Label(self.master, text='', font=('calibri', 18))
+        self.result_label.pack(pady=20)
+
+        self.correct_label = ttk.Label(self.master, text=f'Right answers: {self.correct_answers}', font=('calibri', 14))
+        self.correct_label.pack(pady=5)
+
+        self.incorrect_label = ttk.Label(self.master, text=f'Wrong answers: {self.incorrect_answers}', font=('calibri', 14))
+        self.incorrect_label.pack(pady=5)
+
+        self.clock = pygame.time.Clock()
+
+    def next_word(self):
+        if self.correct_answers < 5:
+            self.current_word, self.current_translation = random.choice(list(self.words_easy.items()))
+            self.master.configure(bg='lightgreen')
+        elif self.correct_answers < 10:
+            self.current_word, self.current_translation = random.choice(list(self.words_medium.items()))
+            self.master.configure(bg='lightblue')
+        else:
+            self.current_word, self.current_translation = random.choice(list(self.words_hard.items()))
+            self.master.configure(bg='lightcoral')
+
+        self.word_label.config(text=self.current_word)
+        self.translation_entry.delete(0, tk.END)
+        self.result_label.config(text='')
+
+        # Check if the player has advanced to a new level
+        if self.correct_answers in [5, 10]:
+            level = 'Medium' if self.correct_answers == 5 else 'Hard'
+            messagebox.showinfo("Level Up!", f"{level} level.")
+
+    def check_translation(self, event=None):
+        user_translation = self.translation_entry.get().lower().strip()
+        if user_translation == self.current_translation:
+            self.correct_answers += 1
+            self.result_label.config(text='True', foreground='green')
+            self.correct_sound.play()
+        else:
+            self.incorrect_answers += 1
+            self.result_label.config(text='False', foreground='red')
+            self.incorrect_sound.play()
